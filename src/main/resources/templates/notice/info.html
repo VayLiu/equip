@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:include="include :: head('公告信息查看')"></th:block>
+    </head>
+    <body>
+        <div class="lyear-layout-web">
+            <div class="lyear-layout-container">
+                <aside class="lyear-layout-sidebar">
+                    <th:block th:include="include :: sidebar('公告信息查看')"></th:block>
+                </aside>
+                <header class="lyear-layout-header">
+                    <th:block th:include="include :: header('公告信息查看')"></th:block>
+                </header>
+                <!--页面主要内容-->
+                <main class="lyear-layout-content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header"><h4>公告信息查看</h4></div>
+                                    <div class="card-body" id="infoModal">
+                                        <h1>标题</h1>
+                                        <pre style="white-space: pre-wrap;">内容</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <!--End 页面主要内容-->
+            </div>
+        </div>
+        <script type="text/javascript">
+
+            let totalPageNum, totalPageSize, currentPageNum, currentPageSize, currentPageRecordNum;
+
+            $(function () {
+                getOne("#infoModal", localStorage.getItem('noticeId'))
+            });
+
+            // 数据回显
+            function getOne(ele, id) {
+                $.ajax({
+                    url: "/notice/getOne/" + id,
+                    type: "GET",
+                    success: function (result) {
+                        const notice = result.data.notice;
+                        $("" + ele + " h1").text(notice.title)
+                        $("" + ele + " pre").text(notice.content)
+                    }
+                })
+            }
+
+        </script>
+    </body>
+</html>

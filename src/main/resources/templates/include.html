@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head th:fragment="head(title)">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+        <title th:text="${title}"></title>
+        <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" type="image/ico">
+        <script type="text/javascript" src="../static/js/jquery.min.js" th:src="@{/js/jquery.min.js}"></script>
+        <script type="text/javascript" src="../static/js/tools.js" th:src="@{/js/tools.js}"></script>
+        <script type="text/javascript" src="../static/js/bootstrap.min.js" th:src="@{/js/bootstrap.min.js}"></script>
+        <script type="text/javascript" src="../static/js/distpicker.js" th:src="@{/js/distpicker.js}"></script>
+        <script type="text/javascript" src="../static/js/jquery-confirm.min.js"
+                th:src="@{/js/jquery-confirm.min.js}"></script>
+        <script type="text/javascript" src="../static/js/bootstrap-notify.min.js"
+                th:src="@{/js/bootstrap-notify.min.js}"></script>
+        <script type="text/javascript" src="../static/js/bootstrap-datetimepicker/moment.min.js"
+                th:src="@{/js/bootstrap-datetimepicker/moment.min.js}"></script>
+        <script type="text/javascript" src="../static/js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js"
+                th:src="@{/js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js}"></script>
+        <script type="text/javascript" src="../static/js/bootstrap-datetimepicker/locale/zh-cn.js"
+                th:src="@{/js/bootstrap-datetimepicker/locale/zh-cn.js}"></script>
+        <script type="text/javascript" src="../static/js/perfect-scrollbar.min.js"
+                th:src="@{/js/perfect-scrollbar.min.js}"></script>
+        <script type="text/javascript" src="../static/js/main.min.js" th:src="@{/js/main.min.js}"></script>
+        <script type="text/javascript" src="../static/js/notify.js" th:src="@{/js/notify.js}"></script>
+        <script type="text/javascript" src="../static/js/Chart.js" th:src="@{/js/Chart.js}"></script>
+        <link rel="stylesheet" href="../static/css/bootstrap.min.css" th:href="@{/css/bootstrap.min.css}">
+        <link rel="stylesheet" href="../static/css/jquery-confirm.min.css" th:href="@{/css/jquery-confirm.min.css}">
+        <link rel="stylesheet" href="../static/css/materialdesignicons.min.css"
+              th:href="@{/css/materialdesignicons.min.css}">
+        <link rel="stylesheet" href="../static/css/bootstrap-datetimepicker.min.css"
+              th:href="@{/css/bootstrap-datetimepicker.min.css}">
+        <link rel="stylesheet" href="../static/css/animate.css" th:href="@{/css/animate.css}">
+        <link rel="stylesheet" href="../static/css/style.min.css" th:href="@{/css/style.min.css}">
+        <script type="text/javascript">
+            $(function () {
+                // 用户信息展示
+                $.ajax({
+                    url: "/system/getInfo",
+                    headers: {'token': localStorage.getItem('token')},
+                    type: "GET",
+                    async: false,
+                    contentType: 'application/json',
+                    success: function (result) {
+                        if (result.code === 200) {
+                            localStorage.setItem('loginUserType', result.data.userType)
+                            localStorage.setItem('loginUser', JSON.stringify(result.data.user))
+                        } else {
+                            window.location.replace("/login")
+                        }
+                    }
+                })
+                let loginUser = JSON.parse(localStorage.getItem('loginUser'));
+                let loginUserType = localStorage.getItem('loginUserType');
+                include(loginUserType, loginUser)
+                $('.topbar-right .name').empty()
+                $('.topbar-right .name').append(loginUser.name)
+                $('.topbar-right .name').append(' <span class="caret"></span>')
+            })
+
+            function include(loginUserType, loginUser) {
+                if (loginUserType === '0') {
+                    //超管
+                    if (loginUser.role === 'admin') {
+                        $('.sidebar-main ul .lab .list').remove()
+                        $('.sidebar-main ul .lab .info').remove()
+                        $('.sidebar-main ul .lab .approve').remove()
+                        $('.sidebar-main ul .equip .list').remove()
+                        $('.sidebar-main ul .equip .check').remove()
+                        $('.sidebar-main ul .equip .sub').remove()
+                        $('.sidebar-main ul .equip .sublist').remove()
+                        $('.sidebar-main ul .equip .scrap').remove()
+                        $('.sidebar-main ul .equip .repair').remove()
+                        $('.sidebar-main ul .notice .list').remove()
+                        $('.sidebar-main ul .student').remove()
+                    }
+                    //普管
+                    if (loginUser.role === 'default') {
+                        $('.sidebar-main ul .admin').remove()
+                        $('.sidebar-main ul .lab .list').remove()
+                        $('.sidebar-main ul .lab .info').remove()
+                        $('.sidebar-main ul .lab .approve').remove()
+                        $('.sidebar-main ul .equip .list').remove()
+                        $('.sidebar-main ul .equip .sub').remove()
+                        $('.sidebar-main ul .equip .sublist').remove()
+                        $('.sidebar-main ul .equip .scrap').remove()
+                        $('.sidebar-main ul .equip .check').remove()
+                        $('.sidebar-main ul .equip .repair').remove()
+                        $('.sidebar-main ul .notice .list').remove()
+                        $('.sidebar-main ul .student').remove()
+                    }
+                }
+                //学生
+                if (loginUserType === '1') {
+                    $('.sidebar-main ul .admin').remove()
+                    $('.sidebar-main ul .user').remove()
+                    $('.sidebar-main ul .lab').remove()
+                    $('.sidebar-main ul .equip').remove()
+                    $('.sidebar-main ul .notice').remove()
+                }
+                //教师
+                if (loginUserType === '2') {
+                    $.ajax({
+                        url: "/lab/getOneByTeacherId/" + loginUser.id,
+                        type: "GET",
+                        async: false,
+                        contentType: 'application/json',
+                        success: function (result) {
+                            if (result.code === 200) {
+                                localStorage.setItem('labId', result.data.lab.id)
+                            } else {
+                                window.location.replace("/login")
+                            }
+                        }
+                    })
+                    $('.sidebar-main ul .admin').remove()
+                    $('.sidebar-main ul .user').remove()
+                    $('.sidebar-main ul .lab .lab').remove()
+                    $('.sidebar-main ul .lab .list').remove()
+                    $('.sidebar-main ul .equip .equip').remove()
+                    $('.sidebar-main ul .equip .check').remove()
+                    $('.sidebar-main ul .equip .infoRecord').remove()
+                    $('.sidebar-main ul .notice .notice').remove()
+                    $('.sidebar-main ul .student').remove()
+
+                }
+                //实验室管理员
+                if (loginUserType === '3') {
+                    $('.sidebar-main ul .admin').remove()
+                    $('.sidebar-main ul .user').remove()
+                    $('.sidebar-main ul .lab .lab').remove()
+                    $('.sidebar-main ul .lab .approve').remove()
+                    $('.sidebar-main ul .lab .info').remove()
+                    $('.sidebar-main ul .equip .equip').remove()
+                    $('.sidebar-main ul .equip .sublist').remove()
+                    $('.sidebar-main ul .equip .repair').remove()
+                    $('.sidebar-main ul .equip .scrap').remove()
+                    $('.sidebar-main ul .equip .infoRecord').remove()
+                    $('.sidebar-main ul .notice .notice').remove()
+                    $('.sidebar-main ul .student').remove()
+
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <div class="lyear-layout-web">
+            <div class="lyear-layout-container">
+                <!--左侧导航-->
+                <aside class="lyear-layout-sidebar" th:fragment="sidebar(current)">
+
+                    <!-- logo -->
+                    <div id="logo" class="sidebar-header">
+                        <a href="index.html" th:href="@{/index}"><img src="../static/images/logo-sidebar.png"
+                                                                      th:src="@{/images/logo-sidebar.png}"
+                                                                      title="设备管理系统" alt="设备管理系统"/></a>
+                    </div>
+                    <div class="lyear-layout-sidebar-scroll">
+
+                        <nav class="sidebar-main">
+                            <ul class="nav nav-drawer">
+                                <li class="nav-item index"
+                                    th:classappend="${#strings.contains('首页 公告信息查看',current)} ? 'active' : ''">
+                                    <a href="index.html" th:href="@{/index}"><i class="mdi mdi-home"></i> 首页</a>
+                                </li>
+                                <li class="nav-item admin"
+                                    th:classappend="${#strings.contains('管理员管理',current)} ? 'active' : ''">
+                                    <a href="admin/admin.html" th:href="@{/admin}"><i class="mdi mdi-account"></i> 管理员管理</a>
+                                </li>
+                                <li class="nav-item user nav-item-has-subnav"
+                                    th:classappend="${#strings.contains('学生管理 教师管理 实验室负责人管理',current)} ? 'active open' : ''">
+                                    <a href="javascript:void(0)"><i class="mdi mdi-account"></i> 用户管理</a>
+                                    <ul class="nav nav-subnav">
+                                        <li th:classappend="${#strings.contains('学生管理',current)} ? 'active' : ''"><a
+                                                href="user/student.html" th:href="@{/user/student}">学生管理</a></li>
+                                        <li th:classappend="${#strings.contains('教师管理',current)} ? 'active' : ''"><a
+                                                href="user/teacher.html" th:href="@{/user/teacher}">教师管理</a></li>
+                                        <li th:classappend="${#strings.contains('实验室负责人管理',current)} ? 'active' : ''"><a
+                                                href="user/manager.html" th:href="@{/user/manager}">实验室负责人管理</a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item lab nav-item-has-subnav"
+                                    th:classappend="${#strings.contains('实验室管理 实验室列表 实验室查看 实验室审批',current)} ? 'active open' : ''">
+                                    <a href="javascript:void(0)"><i class="mdi mdi-wall"></i> 实验室管理</a>
+                                    <ul class="nav nav-subnav">
+                                        <li class="lab"
+                                            th:classappend="${#strings.contains('实验室管理',current)} ? 'active' : ''"><a
+                                                href="lab/lab.html" th:href="@{/lab}">实验室管理</a></li>
+                                        <li class="list"
+                                            th:classappend="${#strings.contains('实验室列表',current)} ? 'active' : ''"><a
+                                                href="lab/list.html" th:href="@{/lab/list}">实验室列表</a></li>
+                                        <li class="info"
+                                            th:classappend="${#strings.contains('实验室查看',current)} ? 'active' : ''"><a
+                                                href="lab/info.html" th:href="@{/lab/info}">实验室查看</a></li>
+                                        <li class="approve"
+                                            th:classappend="${#strings.contains('实验室审批',current)} ? 'active' : ''"><a
+                                                href="lab/approve.html" th:href="@{/lab/approve}">实验室审批</a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item equip nav-item-has-subnav"
+                                    th:classappend="${#strings.contains('设备管理 设备列表 设备申购 申购记录 设备报废 设备维修 设备审核 信息统计',current)} ? 'active open' : ''">
+                                    <a href="javascript:void(0)"><i class="mdi mdi-microscope"></i> 设备管理</a>
+                                    <ul class="nav nav-subnav">
+                                        <li class="equip"
+                                            th:classappend="${#strings.contains('设备管理',current)} ? 'active' : ''"><a
+                                                href="equip/equip.html" th:href="@{/equip}">设备管理</a></li>
+                                        <li class="list"
+                                            th:classappend="${#strings.contains('设备列表',current)} ? 'active' : ''"><a
+                                                href="equip/list.html" th:href="@{/equip/list}">设备列表</a></li>
+                                        <li class="sub"
+                                            th:classappend="${#strings.contains('设备申购',current)} ? 'active' : ''"><a
+                                                href="equip/sub.html" th:href="@{/equip/sub}">设备申购</a></li>
+                                        <li class="sublist"
+                                            th:classappend="${#strings.contains('申购记录',current)} ? 'active' : ''"><a
+                                                href="equip/sublist.html" th:href="@{/equip/sublist}">申购记录</a></li>
+                                        <li class="scrap"
+                                            th:classappend="${#strings.contains('设备报废',current)} ? 'active' : ''"><a
+                                                href="equip/scrap.html" th:href="@{/equip/scrap}">设备报废</a></li>
+                                        <li class="repair"
+                                            th:classappend="${#strings.contains('设备维修',current)} ? 'active' : ''"><a
+                                                href="equip/repair.html" th:href="@{/equip/repair}">设备维修</a></li>
+                                        <li class="check"
+                                            th:classappend="${#strings.contains('设备审核',current)} ? 'active' : ''"><a
+                                                href="equip/repair/repair.html" th:href="@{/equip/sub/approve}">设备审核</a>
+                                        </li>
+                                        <li class="infoRecord"
+                                            th:classappend="${#strings.contains('信息统计',current)} ? 'active' : ''"><a
+                                                href="equip/infoRecord/sub.html"
+                                                th:href="@{/equip/infoRecord/sub}">信息统计</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item notice nav-item-has-subnav"
+                                    th:classappend="${#strings.contains('公告管理 公告列表 发布公告',current)} ? 'active open' : ''">
+                                    <a href="javascript:void(0)"><i class="mdi mdi-palette"></i> 公告发布</a>
+                                    <ul class="nav nav-subnav">
+                                        <li class="notice"
+                                            th:classappend="${#strings.contains('公告管理',current)} ? 'active' : ''"><a
+                                                href="notice/notice.html" th:href="@{/notice}">公告管理</a></li>
+                                        <li class="list"
+                                            th:classappend="${#strings.contains('公告列表',current)} ? 'active' : ''"><a
+                                                href="notice/list.html" th:href="@{/notice/list}">公告列表</a></li>
+                                        <li class="publish"
+                                            th:classappend="${#strings.contains('发布公告',current)} ? 'active' : ''"><a
+                                                href="notice/publish.html" th:href="@{/notice/publish}">发布公告</a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item student apply"
+                                    th:classappend="${#strings.contains('实验室申请',current)} ? 'active' : ''">
+                                    <a href="student/apply.html" th:href="@{/student/apply}"><i
+                                            class="mdi mdi-laptop"></i> 实验室申请</a>
+                                </li>
+                                <li class="nav-item student list"
+                                    th:classappend="${#strings.contains('申请列表',current)} ? 'active' : ''">
+                                    <a href="student/list.html" th:href="@{/student/list}"><i class="mdi mdi-wall"></i>
+                                        申请列表</a>
+                                </li>
+                            </ul>
+                        </nav>
+
+                        <div class="sidebar-footer">
+                            <p class="copyright">Copyright &copy; 2022. All rights reserved.</p>
+                        </div>
+                    </div>
+
+                </aside>
+                <!--End 左侧导航-->
+
+                <!--头部信息-->
+                <header class="lyear-layout-header" th:fragment="header(current)">
+
+                    <nav class="navbar navbar-default">
+                        <div class="topbar">
+
+                            <div class="topbar-left">
+                                <div class="lyear-aside-toggler">
+                                    <span class="lyear-toggler-bar"></span>
+                                    <span class="lyear-toggler-bar"></span>
+                                    <span class="lyear-toggler-bar"></span>
+                                </div>
+                                <span class="navbar-page-title" th:text="${current}"> 首页 </span>
+                            </div>
+
+                            <ul class="topbar-right">
+                                <li class="dropdown dropdown-profile">
+                                    <a href="javascript:void(0)" data-toggle="dropdown">
+                                        <span class="name"></span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <li><a class="btn info"><i class="mdi mdi-account"></i> 个人信息</a>
+                                        </li>
+                                        <li><a class="btn updatePassword"><i class="mdi mdi-lock-outline"></i>
+                                            修改密码</a></li>
+                                        <li><a class="btn"><i class="mdi mdi-delete"></i> 清空缓存</a></li>
+                                        <li class="divider"></li>
+                                        <li><a class="btn logout"><i class="mdi mdi-logout-variant"></i> 退出登录</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <!--切换主题配色-->
+                                <li class="dropdown dropdown-skin">
+                                    <span data-toggle="dropdown" class="icon-palette"><i
+                                            class="mdi mdi-palette"></i></span>
+                                    <ul class="dropdown-menu dropdown-menu-right" data-stopPropagation="true">
+                                        <li class="drop-title"><p>主题</p></li>
+                                        <li class="drop-skin-li clearfix">
+                  <span class="inverse">
+                    <input type="radio" name="site_theme" value="default" id="site_theme_1" checked>
+                    <label for="site_theme_1"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="site_theme" value="dark" id="site_theme_2">
+                    <label for="site_theme_2"></label>
+                  </span>
+                                        </li>
+                                        <li class="drop-title"><p>LOGO</p></li>
+                                        <li class="drop-skin-li clearfix">
+                  <span class="inverse">
+                    <input type="radio" name="logo_bg" value="default" id="logo_bg_1" checked>
+                    <label for="logo_bg_1"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="logo_bg" value="color_2" id="logo_bg_2">
+                    <label for="logo_bg_2"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="logo_bg" value="color_3" id="logo_bg_3">
+                    <label for="logo_bg_3"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="logo_bg" value="color_4" id="logo_bg_4">
+                    <label for="logo_bg_4"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="logo_bg" value="color_5" id="logo_bg_5">
+                    <label for="logo_bg_5"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="logo_bg" value="color_6" id="logo_bg_6">
+                    <label for="logo_bg_6"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="logo_bg" value="color_7" id="logo_bg_7">
+                    <label for="logo_bg_7"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="logo_bg" value="color_8" id="logo_bg_8">
+                    <label for="logo_bg_8"></label>
+                  </span>
+                                        </li>
+                                        <li class="drop-title"><p>头部</p></li>
+                                        <li class="drop-skin-li clearfix">
+                  <span class="inverse">
+                    <input type="radio" name="header_bg" value="default" id="header_bg_1" checked>
+                    <label for="header_bg_1"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="header_bg" value="color_2" id="header_bg_2">
+                    <label for="header_bg_2"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="header_bg" value="color_3" id="header_bg_3">
+                    <label for="header_bg_3"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="header_bg" value="color_4" id="header_bg_4">
+                    <label for="header_bg_4"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="header_bg" value="color_5" id="header_bg_5">
+                    <label for="header_bg_5"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="header_bg" value="color_6" id="header_bg_6">
+                    <label for="header_bg_6"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="header_bg" value="color_7" id="header_bg_7">
+                    <label for="header_bg_7"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="header_bg" value="color_8" id="header_bg_8">
+                    <label for="header_bg_8"></label>
+                  </span>
+                                        </li>
+                                        <li class="drop-title"><p>侧边栏</p></li>
+                                        <li class="drop-skin-li clearfix">
+                  <span class="inverse">
+                    <input type="radio" name="sidebar_bg" value="default" id="sidebar_bg_1" checked>
+                    <label for="sidebar_bg_1"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="sidebar_bg" value="color_2" id="sidebar_bg_2">
+                    <label for="sidebar_bg_2"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="sidebar_bg" value="color_3" id="sidebar_bg_3">
+                    <label for="sidebar_bg_3"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="sidebar_bg" value="color_4" id="sidebar_bg_4">
+                    <label for="sidebar_bg_4"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="sidebar_bg" value="color_5" id="sidebar_bg_5">
+                    <label for="sidebar_bg_5"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="sidebar_bg" value="color_6" id="sidebar_bg_6">
+                    <label for="sidebar_bg_6"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="sidebar_bg" value="color_7" id="sidebar_bg_7">
+                    <label for="sidebar_bg_7"></label>
+                  </span>
+                                            <span>
+                    <input type="radio" name="sidebar_bg" value="color_8" id="sidebar_bg_8">
+                    <label for="sidebar_bg_8"></label>
+                  </span>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <!--切换主题配色-->
+                            </ul>
+
+                        </div>
+                    </nav>
+
+                </header>
+                <!--End 头部信息-->
+
+                <!--页面主要内容-->
+                <main class="lyear-layout-content">
+
+                    <div class="container-fluid">
+
+                        <div class="row">
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="card bg-primary">
+                                    <div class="card-body clearfix">
+                                        <div class="pull-right">
+                                            <p class="h6 text-white m-t-0">今日收入</p>
+                                            <p class="h3 text-white m-b-0 fa-1-5x">102,125.00</p>
+                                        </div>
+                                        <div class="pull-left"><span class="img-avatar img-avatar-48 bg-translucent"><i
+                                                class="mdi mdi-currency-cny fa-1-5x"></i></span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="card bg-danger">
+                                    <div class="card-body clearfix">
+                                        <div class="pull-right">
+                                            <p class="h6 text-white m-t-0">用户总数</p>
+                                            <p class="h3 text-white m-b-0 fa-1-5x">920,000</p>
+                                        </div>
+                                        <div class="pull-left"><span class="img-avatar img-avatar-48 bg-translucent"><i
+                                                class="mdi mdi-account fa-1-5x"></i></span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="card bg-success">
+                                    <div class="card-body clearfix">
+                                        <div class="pull-right">
+                                            <p class="h6 text-white m-t-0">下载总量</p>
+                                            <p class="h3 text-white m-b-0 fa-1-5x">34,005,000</p>
+                                        </div>
+                                        <div class="pull-left"><span class="img-avatar img-avatar-48 bg-translucent"><i
+                                                class="mdi mdi-arrow-down-bold fa-1-5x"></i></span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="card bg-purple">
+                                    <div class="card-body clearfix">
+                                        <div class="pull-right">
+                                            <p class="h6 text-white m-t-0">新增留言</p>
+                                            <p class="h3 text-white m-b-0 fa-1-5x">153 条</p>
+                                        </div>
+                                        <div class="pull-left"><span class="img-avatar img-avatar-48 bg-translucent"><i
+                                                class="mdi mdi-comment-outline fa-1-5x"></i></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4>每周用户</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas class="js-chartjs-bars"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4>交易历史记录</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas class="js-chartjs-lines"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4>项目信息</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>项目名称</th>
+                                                        <th>开始日期</th>
+                                                        <th>截止日期</th>
+                                                        <th>状态</th>
+                                                        <th>进度</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>1</td>
+                                                        <td>设计新主题</td>
+                                                        <td>10/02/2019</td>
+                                                        <td>12/05/2019</td>
+                                                        <td><span class="label label-warning">待定</span></td>
+                                                        <td>
+                                                            <div class="progress progress-striped progress-sm">
+                                                                <div class="progress-bar progress-bar-warning"
+                                                                     style="width: 45%;"></div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2</td>
+                                                        <td>网站重新设计</td>
+                                                        <td>01/03/2019</td>
+                                                        <td>12/04/2019</td>
+                                                        <td><span class="label label-success">进行中</span></td>
+                                                        <td>
+                                                            <div class="progress progress-striped progress-sm">
+                                                                <div class="progress-bar progress-bar-success"
+                                                                     style="width: 30%;"></div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>3</td>
+                                                        <td>模型设计</td>
+                                                        <td>10/10/2019</td>
+                                                        <td>12/11/2019</td>
+                                                        <td><span class="label label-warning">待定</span></td>
+                                                        <td>
+                                                            <div class="progress progress-striped progress-sm">
+                                                                <div class="progress-bar progress-bar-warning"
+                                                                     style="width: 25%;"></div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>4</td>
+                                                        <td>后台管理系统模板设计</td>
+                                                        <td>25/01/2019</td>
+                                                        <td>09/05/2019</td>
+                                                        <td><span class="label label-success">进行中</span></td>
+                                                        <td>
+                                                            <div class="progress progress-striped progress-sm">
+                                                                <div class="progress-bar progress-bar-success"
+                                                                     style="width: 55%;"></div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>5</td>
+                                                        <td>前端设计</td>
+                                                        <td>10/10/2019</td>
+                                                        <td>12/12/2019</td>
+                                                        <td><span class="label label-danger">未开始</span></td>
+                                                        <td>
+                                                            <div class="progress progress-striped progress-sm">
+                                                                <div class="progress-bar progress-bar-danger"
+                                                                     style="width: 0%;"></div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>6</td>
+                                                        <td>桌面软件测试</td>
+                                                        <td>10/01/2019</td>
+                                                        <td>29/03/2019</td>
+                                                        <td><span class="label label-success">进行中</span></td>
+                                                        <td>
+                                                            <div class="progress progress-striped progress-sm">
+                                                                <div class="progress-bar progress-bar-success"
+                                                                     style="width: 75%;"></div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>7</td>
+                                                        <td>APP改版开发</td>
+                                                        <td>25/02/2019</td>
+                                                        <td>12/05/2019</td>
+                                                        <td><span class="label label-danger">暂停</span></td>
+                                                        <td>
+                                                            <div class="progress progress-striped progress-sm">
+                                                                <div class="progress-bar progress-bar-danger"
+                                                                     style="width: 15%;"></div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>8</td>
+                                                        <td>Logo设计</td>
+                                                        <td>10/02/2019</td>
+                                                        <td>01/03/2019</td>
+                                                        <td><span class="label label-warning">完成</span></td>
+                                                        <td>
+                                                            <div class="progress progress-striped progress-sm">
+                                                                <div class="progress-bar progress-bar-success"
+                                                                     style="width: 100%;"></div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </main>
+                <!--End 页面主要内容-->
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:include="include :: head('设备申购')"></th:block>
+    </head>
+    <body>
+        <div class="lyear-layout-web">
+            <div class="lyear-layout-container">
+                <aside class="lyear-layout-sidebar">
+                    <th:block th:include="include :: sidebar('设备申购')"></th:block>
+                </aside>
+                <header class="lyear-layout-header">
+                    <th:block th:include="include :: header('设备申购')"></th:block>
+                </header>
+                <!--页面主要内容-->
+                <main class="lyear-layout-content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card" id="infoModal">
+                                    <div class="card-header">
+                                        <h4>设备申请新购</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <form>
+                                            <div class="row  m-b-15">
+                                                <div class="col-lg-4 col-lg-offset-2">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">设备名称</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" name="equipName"
+                                                               placeholder="请输入设备名称...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">归属实验室</button>
+                                                        </span>
+                                                        <select class="form-control" name="labId"></select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="col-lg-4 col-lg-offset-2">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">设备单价</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" name="equipPrice"
+                                                               placeholder="请输入设备单价...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">设备数量</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" name="equipQuantity"
+                                                               placeholder="请输入数量...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="col-lg-4 col-lg-offset-2">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">设备产地</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" name="equipOrigin"
+                                                               placeholder="请输入设备产地...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">生产日期</button>
+                                                        </span>
+                                                        <input class="form-control js-datetimepicker" type="text"
+                                                               id="example-datetimepicker" name="equipDatePro"
+                                                               placeholder="请选择具体时间..."
+                                                               value="" data-side-by-side="true" data-locale="zh-cn"
+                                                               data-format="YYYY-MM-DD HH:mm:ss"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="form-group col-lg-8 col-lg-offset-2">
+                                                    <label for="seo_description">申购理由</label>
+                                                    <textarea class="form-control" id="seo_description"
+                                                              name="reason" rows="5"
+                                                              placeholder="请输入申购理由..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="form-group col-lg-8 col-lg-offset-2">
+                                                    <a class="btn btn-primary" id="save">提交</a>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <!--End 页面主要内容-->
+            </div>
+        </div>
+        <script type="text/javascript">
+
+            $(function () {
+                getPublishers('#infoModal [name="labId"]')
+            })
+
+
+            $("#infoModal").on("click", "#save", function () {
+                $.confirm({
+                    title: '确认提交申请',
+                    content: '确认提交设备申购申请吗？',
+                    typeAnimated: false,
+                    buttons: {
+                        confirm: {
+                            text: '确认',
+                            btnClass: 'btn-blue',
+                            action: function () {
+                                $.ajax({
+                                    url: "/equip/sub/apply",
+                                    contentType: 'application/json',
+                                    type: "POST",
+                                    data: JSON.stringify({
+                                        "equipName": $('#infoModal form [name="equipName"]').val(),
+                                        "equipQuantity": $('#infoModal form [name="equipQuantity"]').val(),
+                                        "equipPrice": $('#infoModal form [name="equipPrice"]').val(),
+                                        "equipDatePro": $('#infoModal form [name="equipDatePro"]').val(),
+                                        "equipOrigin": $('#infoModal form [name="equipOrigin"]').val(),
+                                        "subId": JSON.parse(localStorage.getItem("loginUser")).id,
+                                        "labId": $('#infoModal form [name="labId"]').val(),
+                                        "state": 0,
+                                        "reason": $('#infoModal form [name="reason"]').val(),
+                                        'loginUserType': localStorage.getItem('loginUserType'),
+                                        'loginUserId': JSON.parse(localStorage.getItem('loginUser')).id
+                                    }),
+                                    success: function (result) {
+                                        if (result.code === 200) {
+                                            notify_.loading('hide');
+                                            notify_.notify('已提交设备申请！', 'success', 100);
+                                            resetForm('#infoModal form')
+                                        } else {
+                                            // 显示失败信息
+                                            notify_.notify(result.message, 'danger', 100);
+                                        }
+                                    }
+                                })
+                            }
+                        },
+                        close: {
+                            text: '取消',
+                        }
+                    }
+                })
+            })
+
+            // 获取实验室列表
+            function getPublishers(ele) {
+                $.ajax({
+                    url: "/lab/getAll",
+                    type: "GET",
+                    data: "loginUserType=" + localStorage.getItem('loginUserType')
+                        + "&loginUserId=" + JSON.parse(localStorage.getItem('loginUser')).id,
+                    success: function (result) {
+                        $(ele).empty()
+                        const list = result.data;
+                        $.each(list, function () {
+                            const optionEle = $("<option></option>").append(this.name).attr("value", this.id)
+                            optionEle.appendTo(ele)
+                        })
+                    }
+                })
+            }
+
+        </script>
+    </body>
+</html>

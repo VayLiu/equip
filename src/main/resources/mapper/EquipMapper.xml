@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xxx.equip.mapper.EquipMapper">
+
+    <select id="selectDtoPage" resultType="com.xxx.equip.dto.EquipDTO">
+        select e.*, l.name as labName, l.manager_id as labManagerId, u.name as subName
+        from equipment e
+                 left join lab l on l.id = e.lab_id
+                 left join user u on u.id = e.sub_id
+        ${ew.customSqlSegment}
+    </select>
+</mapper>

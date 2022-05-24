@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+        <title>登录页面</title>
+        <link rel="icon" href="../static/favicon.ico" th:href="@{favicon.ico}" type="image/ico">
+        <script type="text/javascript" src="../static/js/jquery.min.js" th:src="@{js/jquery.min.js}"></script>
+        <script type="text/javascript" src="../static/js/bootstrap.min.js" th:src="@{js/bootstrap.min.js}"></script>
+        <script type="text/javascript" src="../static/js/distpicker.js" th:src="@{js/distpicker.js}"></script>
+        <script type="text/javascript" src="../static/js/jquery-confirm.min.js"
+                th:src="@{js/jquery-confirm.min.js}"></script>
+        <script type="text/javascript" src="../static/js/bootstrap-notify.min.js"
+                th:src="@{js/bootstrap-notify.min.js}"></script>
+        <script type="text/javascript" src="../static/js/notify.js" th:src="@{js/notify.js}"></script>
+        <link rel="stylesheet" href="../static/css/bootstrap.min.css" th:href="@{css/bootstrap.min.css}">
+        <link rel="stylesheet" href="../static/css/materialdesignicons.min.css"
+              th:href="@{css/materialdesignicons.min.css}">
+        <link rel="stylesheet" href="../static/css/animate.css" th:href="@{css/animate.css}">
+        <link rel="stylesheet" href="../static/css/style.min.css" th:href="@{css/style.min.css}">
+        <style>
+            body {
+                display: -webkit-box;
+                display: flex;
+                -webkit-box-pack: center;
+                justify-content: center;
+                -webkit-box-align: center;
+                align-items: center;
+                height: 100%;
+            }
+
+            .login-box {
+                display: table;
+                table-layout: fixed;
+                overflow: hidden;
+                max-width: 700px;
+                opacity: 0.95;
+            }
+
+            .login-left {
+                display: table-cell;
+                position: relative;
+                margin-bottom: 0;
+                border-width: 0;
+                padding: 45px;
+            }
+
+            .login-left .form-group:last-child {
+                margin-bottom: 0px;
+            }
+
+            .login-right {
+                display: table-cell;
+                position: relative;
+                margin-bottom: 0;
+                border-width: 0;
+                padding: 45px;
+                width: 50%;
+                max-width: 50%;
+                background: #678fb2 !important;
+                background: -moz-linear-gradient(45deg, #678fb2 0, #2d58c3 100%) !important;
+                background: -webkit-linear-gradient(45deg, #678fb2 0, #2d58c3 100%) !important;
+                background: linear-gradient(45deg, #678fb2 0, #2d58c3 100%) !important;
+                filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#67b26f', endColorstr='#4ca2cd', GradientType=1) !important;
+            }
+
+            .login-box .has-feedback.feedback-left .form-control {
+                padding-left: 38px;
+                padding-right: 12px;
+            }
+
+            .login-box .has-feedback.feedback-left .form-control-feedback {
+                left: 0;
+                right: auto;
+                width: 38px;
+                height: 38px;
+                line-height: 38px;
+                z-index: 4;
+                color: #dcdcdc;
+            }
+
+            .login-box .has-feedback.feedback-left.row .form-control-feedback {
+                left: 15px;
+            }
+
+            @media (max-width: 576px) {
+                .login-right {
+                    display: none;
+                }
+            }
+        </style>
+    </head>
+
+    <body style="background-image: url('../static/images/IMG_1990.jpeg'); background-size: cover;"
+          th:style="'background-image: url(/images/IMG_1990.jpeg); background-size: cover;'">
+        <div class="bg-translucent p-10">
+            <div class="login-box bg-white clearfix">
+                <div class="login-left">
+                    <form action="#!" method="post">
+                        <div class="form-group has-feedback feedback-left">
+                            <input type="text" placeholder="请输入您的用户名" class="form-control" name="username"/>
+                            <span class="mdi mdi-account form-control-feedback" aria-hidden="true"></span>
+                        </div>
+                        <div class="form-group has-feedback feedback-left">
+                            <input type="password" placeholder="请输入密码" class="form-control" name="password"/>
+                            <span class="mdi mdi-lock form-control-feedback" aria-hidden="true"></span>
+                        </div>
+                        <div class="form-group has-feedback feedback-left row">
+                            <div class="col-xs-7">
+                                <input type="text" name="verifyCode" class="form-control" placeholder="验证码"
+                                       autocomplete="off">
+                                <span class="mdi mdi-check-all form-control-feedback" aria-hidden="true"></span>
+                            </div>
+                            <div class="col-xs-5">
+                                <img src="../static/images/captcha.png" th:src="@{system/getVerifyCodeImage}"
+                                     class="pull-right" id="captcha"
+                                     style="cursor: pointer; max-width: none"
+                                     onclick="this.src=this.src+'?d='+Math.random();" title="点击刷新" alt="captcha">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="lyear-radio radio-primary radio-inline">
+                                <input type="radio" name="role" value="0" checked><span
+                                    style="padding-left: 15px">管理员</span>
+                            </label>
+                            <label class="lyear-radio radio-primary radio-inline">
+                                <input type="radio" name="role" value="1"><span style="padding-left: 15px">学生</span>
+                            </label>
+                            <label class="lyear-radio radio-primary radio-inline">
+                                <input type="radio" name="role" value="2"><span style="padding-left: 15px">教师</span>
+                            </label>
+                            <label class="lyear-radio radio-primary radio-inline">
+                                <input type="radio" name="role" value="3"><span style="padding-left: 15px">实验室负责人</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-block btn-primary" id="loginBtn" type="button">立即登录</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="login-right">
+                    <!--<p><img src="/images/logo.png" class="m-b-md m-t-xs" alt="logo"></p>-->
+                    <p class="text-white m-tb-15">实验室管理系统，为实验室的管理提供更为快捷方便的服务，集数据查询、统计为一体。</p>
+                    <p class="text-white">Copyright © 2022 </p>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                // 登录
+
+                $(document).on("click", "#loginBtn", function () {
+
+                    $.ajax({
+                        url: "system/login",
+                        type: "POST",
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            'username': $('form [name="username"]').val(),
+                            'password': $('form [name="password"]').val(),
+                            'verifyCode': $('form [name="verifyCode"]').val(),
+                            'role': $('form [name="role"]:checked').val()
+                        }),
+                        success: function (result) {
+                            if (result.code === 200) {
+                                localStorage.setItem('token', result.data.token)
+                                // 无返回跳转主页
+                                window.location.replace("/index")
+                            } else {
+                                const e = document.createEvent("MouseEvents");
+                                e.initEvent("click", true, true);
+                                document.getElementById("captcha").dispatchEvent(e); //只要id 就好
+                                // 警告弹窗
+                                notify_.notify(result.message, 'danger', 100);
+                            }
+                        }
+                    })
+
+                })
+            })
+        </script>
+    </body>
+</html>

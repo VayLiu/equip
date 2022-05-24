@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xxx.equip.mapper.LabApproveMapper">
+
+    <select id="selectDtoPage" resultType="com.xxx.equip.dto.LabApproveDTO">
+        select l.*, t.name as teacherName, s.name as studentName, lab.name as labName
+        from lab_approve l
+                 left join user t on t.id = l.teacher_id
+                 left join user s on s.id = l.student_id
+                 left join lab on lab.id = l.lab_id
+            ${ew.customSqlSegment}
+    </select>
+</mapper>

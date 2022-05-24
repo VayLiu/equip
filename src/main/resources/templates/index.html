@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:include="include :: head('管理')"></th:block>
+    </head>
+    <body>
+
+        <div class="lyear-layout-web">
+            <div class="lyear-layout-container">
+                <aside class="lyear-layout-sidebar">
+                    <th:block th:include="include :: sidebar('首页')"></th:block>
+                </aside>
+                <header class="lyear-layout-header">
+                    <th:block th:include="include :: header('首页')"></th:block>
+                </header>
+
+                <!--页面主要内容-->
+                <main class="lyear-layout-content">
+
+                    <div id="myCarousel" class="carousel" data-ride="carousel">
+
+                        <!--圆圈指示符-->
+                        <ol class="carousel-indicators" style="margin-bottom: 0px;"></ol>
+
+                        <!--图片的容器-->
+                        <div class="carousel-inner"></div>
+
+                        <!--左右的按钮-->
+                        <a href="#myCarousel" class="left carousel-control" data-slide="prev">
+                            <span class="glyphicon glyphicon-chevron-left"></span>
+                        </a>
+                        <a href="#myCarousel" class="right carousel-control" data-slide="next">
+                            <span class="glyphicon glyphicon-chevron-right"></span>
+                        </a>
+
+                    </div>
+
+                    <div class="container-fluid">
+
+                        <div class="row">
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="card bg-primary">
+                                    <div class="card-body clearfix">
+                                        <div class="pull-right">
+                                            <p class="h6 text-white m-t-0">实验室总数</p>
+                                            <p class="h3 text-white m-b-0 fa-1-5x labCount">0</p>
+                                        </div>
+                                        <div class="pull-left"><span
+                                                class="img-avatar img-avatar-48 bg-translucent"><i
+                                                class="mdi mdi-currency-cny fa-1-5x"></i></span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="card bg-danger">
+                                    <div class="card-body clearfix">
+                                        <div class="pull-right">
+                                            <p class="h6 text-white m-t-0">用户总数</p>
+                                            <p class="h3 text-white m-b-0 fa-1-5x userCount">0</p>
+                                        </div>
+                                        <div class="pull-left"><span
+                                                class="img-avatar img-avatar-48 bg-translucent"><i
+                                                class="mdi mdi-account fa-1-5x"></i></span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="card bg-success">
+                                    <div class="card-body clearfix">
+                                        <div class="pull-right">
+                                            <p class="h6 text-white m-t-0">设备总数</p>
+                                            <p class="h3 text-white m-b-0 fa-1-5x equipCount">0</p>
+                                        </div>
+                                        <div class="pull-left"><span
+                                                class="img-avatar img-avatar-48 bg-translucent"><i
+                                                class="mdi mdi-arrow-down-bold fa-1-5x"></i></span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="card bg-purple">
+                                    <div class="card-body clearfix">
+                                        <div class="pull-right">
+                                            <p class="h6 text-white m-t-0">公告总数</p>
+                                            <p class="h3 text-white m-b-0 fa-1-5x noticeCount">0</p>
+                                        </div>
+                                        <div class="pull-left"><span
+                                                class="img-avatar img-avatar-48 bg-translucent"><i
+                                                class="mdi mdi-comment-outline fa-1-5x"></i></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4>活跃用户</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas class="js-chartjs-bars"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4>近7天内实验室的使用频率</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas class="js-chartjs-lines"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </main>
+                <!--End 页面主要内容-->
+            </div>
+        </div>
+        <script type="text/javascript">
+
+            $(function () {
+
+                getCarouselNotice()
+
+                initChart()
+
+                initNoticeList()
+
+                toPage(1, 10)
+
+                getEquipCount(".equipCount", '')
+                getUserCount(".userCount", '')
+                getLabCount(".labCount", '')
+                getNoticeCount(".noticeCount", '')
+
+
+                // 信息查看
+                $(document).on("click", ".noticeBtn", function () {
+                    const id = $(this).find("input").val()
+                    console.log(id)
+                    localStorage.setItem('noticeId', id)
+                    window.open("/notice/info")
+                })
+
+            });
+
+            // 初始化图表
+            function initChart() {
+                var $dashChartBarsCnt = jQuery('.js-chartjs-bars')[0].getContext('2d'),
+                    $dashChartLinesCnt = jQuery('.js-chartjs-lines')[0].getContext('2d');
+
+                $.ajax({
+                    url: "/system/getLoginCount",
+                    type: "GET",
+                    success: function (result) {
+                        let dates = []
+                        let nums = []
+                        const list = result.data;
+                        $.each(list, function () {
+                            dates.push(this.date.substring(0, 10))
+                            nums.push(this.num)
+                        })
+                        const loginData = {
+                            labels: dates,
+                            datasets: [
+                                {
+                                    label: '登录次数',
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(0,0,0,0)',
+                                    backgroundColor: 'rgba(51,202,185,0.5)',
+                                    hoverBackgroundColor: "rgba(51,202,185,0.7)",
+                                    hoverBorderColor: "rgba(0,0,0,0)",
+                                    data: nums
+                                }
+                            ]
+                        };
+                        new Chart($dashChartBarsCnt, {
+                            type: 'bar',
+                            data: loginData
+                        });
+                    }
+                })
+
+                $.ajax({
+                    url: "/lab/approve/getCount",
+                    type: "GET",
+                    success: function (result) {
+                        let dates = []
+                        let nums = []
+                        const list = result.data;
+                        $.each(list, function () {
+                            dates.push(this.date.substring(0, 7))
+                            nums.push(this.num)
+                        })
+                        const labData = {
+                            labels: dates,
+                            datasets: [
+                                {
+                                    label: '使用频率',
+                                    borderColor: '#358ed7',
+                                    backgroundColor: 'rgba(53, 142, 215, 0.175)',
+                                    borderWidth: 1,
+                                    fill: false,
+                                    lineTension: 0.5,
+                                    data: nums
+                                }
+                            ]
+                        };
+                        new Chart($dashChartLinesCnt, {
+                            type: 'line',
+                            data: labData
+                        });
+                    }
+                })
+            }
+
+            // 初始化公告信息结构
+            function initNoticeList() {
+
+                const noticeList = $('<div class="card-body"></div>')
+                    .append($('<div class="row m-15 noticeList"></div>'))
+                    .append($('<div class="row m-15"><div id="pageInfoArea" class="col-md-6 help-block"></div><div id="pageNavArea" class="col-md-4 help-block"></div></div>'))
+
+                const noticeModel = $('<div class="row"></div>')
+                    .append(
+                        $('<div class="col-lg-12"></div>')
+                            .append(
+                                $('<div class="card">')
+                                    .append($('<div class="card-header"><h4>公告信息</h4></div>'))
+                                    .append(noticeList)
+                            )
+                    )
+                noticeModel.appendTo($('.container-fluid'))
+            }
+
+
+            // 获取轮播列表
+            function getCarouselNotice() {
+                $.ajax({
+                    url: "/notice/getCarouselNotice",
+                    type: "GET",
+                    success: function (result) {
+                        $('.carousel-indicators').empty()
+                        $('.carousel-inner').empty()
+                        const list = result.data;
+                        $.each(list, function (i, notice) {
+                            const olEle = $('<li data-target="#myCarousel"></li>').attr('data-slide-to', i)
+                            const item = $('<div class="item"></div>')
+                                .append($('<img height="50%" src="/images/carousel.png"/>'))
+                                .append(
+                                    $('<div class="carousel-caption"></div>')
+                                        .append($('<h3>' + notice.title + '</h3>'))
+                                        .append($('<p>' + notice.content + '</p>'))
+                                )
+                            if (i === 0) {
+                                olEle.addClass('active')
+                                item.addClass('active')
+                            }
+                            olEle.appendTo($(".carousel-indicators"))
+                            item.appendTo($(".carousel-inner"))
+                        })
+                    }
+                })
+            }
+
+            // 公告页面跳转
+            function toPage(pn, ps) {
+                $.ajax({
+                    url: "/notice/getAll/" + pn + "/" + ps,
+                    type: "GET",
+                    success: function (result) {
+                        buildPageInfo(result);
+                        buildTable(result);
+                    }
+                })
+            }
+
+            // 解析数据
+            function buildTable(result) {
+                // 清空数据
+                $(".noticeList").empty()
+                // 构造数据
+                const list = result.data.records;
+                $.each(list, function (index, item) {
+                    const title = $('<dd class="col-md-10"></dd>').append(
+                        $('<a class="btn noticeBtn"></a>')
+                            .append(item.title)
+                            .append($('<input hidden value="' + item.id + '">'))
+                    );
+                    const time = $('<dt class="col-md-2"></dt>').append(item.updatedAt);
+                    $('<dl class="row"></dl>')
+                        .append(title)
+                        .append(time).appendTo(".noticeList");
+                })
+            }
+
+        </script>
+    </body>
+</html>

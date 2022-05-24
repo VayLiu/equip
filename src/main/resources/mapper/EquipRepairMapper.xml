@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xxx.equip.mapper.EquipRepairMapper">
+
+    <select id="selectDtoPage" resultType="com.xxx.equip.dto.EquipRepairDTO">
+        select er.*, e.name as equipName, l.name as labName, apply.name as applyName, approve.name as approveName
+        from equip_repair er
+                 left join equipment e on e.id = er.equip_id
+                 left join lab l on l.id = er.lab_id
+                 left join user apply on apply.id = er.apply_id
+                 left join user approve on approve.id = er.approve_id
+        ${ew.customSqlSegment}
+    </select>
+</mapper>

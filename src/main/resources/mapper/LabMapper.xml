@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xxx.equip.mapper.LabMapper">
+
+    <select id="selectDtoPage" resultType="com.xxx.equip.dto.LabDTO">
+        select l.*, m.name managerName, t.name teacherName
+        from lab l
+                 left join user m on m.id = l.manager_id
+                 left join user t on t.id = l.teacher_id
+            ${ew.customSqlSegment}
+    </select>
+
+    <select id="listTeacher" resultType="com.xxx.equip.dto.LabDTO">
+        select l.teacher_id, t.name teacherName
+        from lab l
+                 left join user m on m.id = l.manager_id
+                 left join user t on t.id = l.teacher_id
+            ${ew.customSqlSegment}
+    </select>
+
+
+</mapper>

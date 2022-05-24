@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:include="include :: head('个人信息')"></th:block>
+    </head>
+    <body>
+        <div class="lyear-layout-web">
+            <div class="lyear-layout-container">
+                <aside class="lyear-layout-sidebar">
+                    <th:block th:include="include :: sidebar('首页')"></th:block>
+                </aside>
+                <header class="lyear-layout-header">
+                    <th:block th:include="include :: header('个人信息')"></th:block>
+                </header>
+                <!--页面主要内容-->
+                <main class="lyear-layout-content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card" id="infoModal">
+                                    <div class="card-header">
+                                        <h4>个人信息</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <form>
+                                            <div class="row  m-b-15">
+                                                <div class="col-lg-4 col-lg-offset-2">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">姓名</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" name="name">
+                                                        <span class="help-block"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">性别</button>
+                                                        </span>
+                                                        <div class="form-group">
+                                                            <div class="col-sm-5">
+                                                                <label class="radio-inline">
+                                                                    <input type="radio" name="gender" value="男"> 男
+                                                                </label>
+                                                            </div>
+                                                            <div class="col-sm-5">
+                                                                <label class="radio-inline">
+                                                                    <input type="radio" name="gender" value="女"> 女
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <span class="help-block"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="col-lg-4 col-lg-offset-2">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">Email</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" name="email">
+                                                        <span class="help-block"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">手机号</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" name="telPhone">
+                                                        <span class="help-block"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="col-lg-8 col-lg-offset-2">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">地区</button>
+                                                        </span>
+                                                        <div class="form-group area" data-toggle="distpicker">
+                                                            <div class="col-sm-4 m-">
+                                                                <select id="province" name="province"
+                                                                        class="form-control"></select>
+                                                            </div>
+                                                            <div class="col-sm-4 row">
+                                                                <select id="city" name="city"
+                                                                        class="form-control"></select>
+                                                            </div>
+                                                            <div class="col-sm-4 row">
+                                                                <select id="district" name="district"
+                                                                        class="form-control"></select>
+                                                            </div>
+                                                        </div>
+                                                        <span class="help-block"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="col-lg-8 col-lg-offset-2">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">详细地址</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" name="address">
+                                                        <span class="help-block"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="form-group col-lg-8 col-lg-offset-2">
+                                                    <a class="btn btn-primary" id="save">修改</a>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <!--End 页面主要内容-->
+            </div>
+        </div>
+        <script type="text/javascript">
+
+            $(function () {
+                getOne('.card-body form', JSON.parse(localStorage.getItem('loginUser')).id)
+            })
+
+            // 数据回显
+            function getOne(ele, id) {
+                $.ajax({
+                    url: "/user/teacher/getOne/" + id,
+                    type: "GET",
+                    success: function (result) {
+                        const teacher = result.data.teacher;
+                        $("" + ele + " [name='username']").val(teacher.username)
+                        $("" + ele + " [name='password']").val(teacher.password)
+                        $("" + ele + " [name='gender']").val([teacher.gender])
+                        $("" + ele + " [name='email']").val(teacher.email)
+                        $("" + ele + " [name='name']").val(teacher.name)
+                        $(".area").distpicker('destroy').distpicker({
+                            province: teacher.province,
+                            city: teacher.city,
+                            district: teacher.district
+                        });
+                        $("" + ele + " [name='address']").val(teacher.address)
+                        $("" + ele + " [name='telPhone']").val(teacher.telPhone)
+                    }
+                })
+            }
+
+
+            // 保存/更新
+            $("#infoModal").on("click", "#save", function () {
+                const loginUserType = localStorage.getItem('loginUserType');
+                let url;
+                if (loginUserType === '1') {
+                    url = "/user/student/saveOrUpdate"
+                } else if (loginUserType === '2') {
+                    url = "/user/teacher/saveOrUpdate"
+                } else if (loginUserType === '3') {
+                    url = "/user/manager/saveOrUpdate"
+                }
+                $.ajax({
+                    url: url,
+                    contentType: 'application/json',
+                    type: "POST",
+                    data: JSON.stringify({
+                        "id": JSON.parse(localStorage.getItem('loginUser')).id,
+                        "username": $('#infoModal form [name="username"]').val(),
+                        "password": $('#infoModal form [name="password"]').val(),
+                        "gender": $('#infoModal form [name="gender"]:checked').val(),
+                        "email": $('#infoModal form [name="email"]').val(),
+                        "name": $('#infoModal form [name="name"]').val(),
+                        "province": $('#infoModal form [name="province"]').val(),
+                        "city": $('#infoModal form [name="city"]').val(),
+                        "district": $('#infoModal form [name="district"]').val(),
+                        "address": $('#infoModal form [name="address"]').val(),
+                        "telPhone": $('#infoModal form [name="telPhone"]').val()
+                    }),
+                    success: function (result) {
+                        if (result.code === 200) {
+                            notify_.notify('修改成功！', 'success', 100);
+                            window.location.replace("/info")
+                        } else {
+                            // 显示失败信息
+                            notify_.notify(result.message, 'danger', 100);
+                        }
+                    }
+                })
+            })
+
+
+        </script>
+    </body>
+</html>

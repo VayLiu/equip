@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:include="include :: head('实验室查看')"></th:block>
+    </head>
+    <body>
+        <div class="lyear-layout-web">
+            <div class="lyear-layout-container">
+                <aside class="lyear-layout-sidebar">
+                    <th:block th:include="include :: sidebar('实验室查看')"></th:block>
+                </aside>
+                <header class="lyear-layout-header">
+                    <th:block th:include="include :: header('实验室查看')"></th:block>
+                </header>
+                <!--页面主要内容-->
+                <main class="lyear-layout-content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header"><h4>实验室信息</h4></div>
+                                    <div class="card-body" id="infoModal">
+                                        <form class="form-horizontal" action="#" method="post"
+                                              enctype="multipart/form-data" onsubmit="return false;">
+                                            <div class="form-group">
+                                                <label class="col-xs-12">实验室名称</label>
+                                                <div class="col-xs-12">
+                                                    <div class="form-control-static hidden"></div>
+                                                    <div class="edit ">
+                                                        <input type="text" class="form-control" name="name"
+                                                               placeholder="请输入实验室名称，长度为2-20个字符"
+                                                               autocomplete="off">
+                                                        <span class="help-block"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-xs-12">实验室简介</label>
+                                                <div class="col-xs-12">
+                                                    <div class="form-control-static hidden"></div>
+                                                    <div class="edit ">
+                                                        <textarea class="form-control" rows="6"
+                                                                  name="brief" placeholder="请输入实验室简介"
+                                                                  autocomplete="off"></textarea>
+                                                        <span class="help-block"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-success">
+                                    <div class="card-body clearfix">
+                                        <div class="pull-right">
+                                            <p class="h6 text-white m-t-0">设备数</p>
+                                            <p class="h3 text-white m-b-0 fa-1-5x equipCount">5,000</p>
+                                        </div>
+                                        <div class="pull-left"><span
+                                                class="img-avatar img-avatar-48 bg-translucent"><i
+                                                class="mdi mdi-package-variant-closed fa-1-5x"></i></span></div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4>实验室每月的使用频率</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas class="js-chartjs-lines"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <!--End 页面主要内容-->
+            </div>
+        </div>
+        <script type="text/javascript">
+
+            let totalPageNum, totalPageSize, currentPageNum, currentPageSize, currentPageRecordNum;
+
+            $(function () {
+
+                getEquipCount(".equipCount", localStorage.getItem('labId'))
+                getOne("#infoModal", localStorage.getItem('labId'))
+                initTip("#infoModal")
+
+                var $dashChartLinesCnt = jQuery('.js-chartjs-lines')[0].getContext('2d');
+
+                $.ajax({
+                    url: "/lab/approve/getCount?labId=".concat(localStorage.getItem('labId')),
+                    type: "GET",
+                    success: function (result) {
+                        let dates = []
+                        let nums = []
+                        const list = result.data;
+                        $.each(list, function () {
+                            dates.push(this.date.substring(0, 7))
+                            nums.push(this.num)
+                        })
+                        const labData = {
+                            labels: dates,
+                            datasets: [
+                                {
+                                    label: '使用频率',
+                                    borderColor: '#358ed7',
+                                    backgroundColor: 'rgba(53, 142, 215, 0.175)',
+                                    borderWidth: 1,
+                                    fill: false,
+                                    lineTension: 0.5,
+                                    data: nums
+                                }
+                            ]
+                        };
+                        new Chart($dashChartLinesCnt, {
+                            type: 'line',
+                            data: labData
+                        });
+                    }
+                })
+
+            });
+
+            $("#infoModal").on("click", "#save", function () {
+
+                $.confirm({
+                    title: '提醒',
+                    content: '确认实验室信息进行修改吗？',
+                    typeAnimated: false,
+                    buttons: {
+                        confirm: {
+                            text: '修改',
+                            btnClass: 'btn-blue',
+                            action: function () {
+                                // 校验数据
+                                if (!validate_post("#infoModal")) {
+                                    notify_.notify("请按照提示信息填写数据！", 'danger', 100);
+                                    return false;
+                                }
+                                $.ajax({
+                                    url: "/lab/saveOrUpdate",
+                                    contentType: 'application/json',
+                                    type: "POST",
+                                    data: JSON.stringify({
+                                        "id": localStorage.getItem('labId'),
+                                        "name": $('#infoModal form [name="name"]').val(),
+                                        "brief": $('#infoModal form [name="brief"]').val(),
+                                        "state": localStorage.getItem('loginUserType') === '2' ?
+                                            $('#infoModal [name="state"]')[0].checked ? 0 : 1
+                                            : null
+                                    }),
+                                    success: function (result) {
+                                        if (result.code === 200) {
+                                            notify_.notify('修改成功！', 'success', 100);
+                                            // 关闭模态框
+                                            $("#infoModal").modal("hide")
+                                        } else {
+                                            // 显示失败信息
+                                            notify_.notify(result.message, 'danger', 100);
+                                        }
+                                    }
+                                })
+                            }
+                        },
+                        close: {
+                            text: '取消',
+                        }
+                    }
+                })
+            })
+
+            // 校验初始化
+            function initTip(ele) {
+                // 名称
+                const name = $("" + ele + " [name='name']");
+                const regName = /^[0-9a-zA-Z\u4E00-\u9FA5\uf900-\ufa2d·s]{2,20}$/;
+                tip(name, regName, "请输入有效的名称，长度为2-20个字符")
+            }
+
+            // 校验提示
+            function tip(ele, reg, msg) {
+                ele.focus(function () {
+                    $(this).parent().removeClass("has-error has-success")
+                    $(this).next("span").text(msg)
+                })
+                ele.on("input propertychange", function () {
+                    return validate(ele, reg, msg)
+                }).blur(function () {
+                    return validate(ele, reg, msg)
+                })
+            }
+
+            // 数据校验
+            function validate(ele, reg, msg) {
+                if (reg.test(ele.val())) {
+                    tipMsg(ele, "success", "")
+                    return true
+                } else {
+                    tipMsg(ele, "error", msg)
+                    return false
+                }
+            }
+
+            // 提交数据-校验
+            function validate_post(ele) {
+                const roleId = $("" + ele + " [name='roleId']");
+                const name = $("" + ele + " [name='name']");
+                if (
+                    roleId.val() === '' ||
+                    name.val() === '') {
+                    notify_.notify('*为必填数据！', 'danger', 100);
+                    return false;
+                }
+                return !(
+                    roleId.parent().hasClass("has-error") ||
+                    name.parent().hasClass("has-error"));
+            }
+
+            // 数据回显
+            function getOne(ele, id) {
+                $.ajax({
+                    url: "/lab/getOne/" + id,
+                    type: "GET",
+                    success: function (result) {
+                        const lab = result.data.lab;
+                        $("" + ele + " [name='name']").val(lab.name)
+                        $("" + ele + " [name='brief']").val(lab.brief)
+                        if (localStorage.getItem('loginUserType') === '2') {
+                            const state = $('<div class="form-group"></div>')
+                                .append($('<label class="col-xs-12">当前是否可以被申请</label>'))
+                                .append($('<div class="col-xs-12"></div>')
+                                    .append($('<label class="lyear-switch switch-outline switch-primary"></label>')
+                                        .append(result.data.lab.state === 0 ? '<input name="state" type="checkbox" checked>' : '<input type="checkbox" name="state">')
+                                        .append('<span></span>')));
+                            $("" + ele + " form").append(state)
+                        }
+                        const saveBtn = $('<div class="form-group"></div>')
+                            .append($('<div class="col-xs-12"></div>')
+                                .append($('<button type="button" class="btn btn-primary" id="save">修改</button>')))
+                        $("" + ele + " form").append(saveBtn)
+                    }
+                })
+            }
+
+        </script>
+    </body>
+</html>

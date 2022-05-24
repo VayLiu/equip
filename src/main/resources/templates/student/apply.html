@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:include="include :: head('实验室申请')"></th:block>
+    </head>
+    <body>
+        <div class="lyear-layout-web">
+            <div class="lyear-layout-container">
+                <aside class="lyear-layout-sidebar">
+                    <th:block th:include="include :: sidebar('实验室申请')"></th:block>
+                </aside>
+                <header class="lyear-layout-header">
+                    <th:block th:include="include :: header('实验室申请')"></th:block>
+                </header>
+                <!--页面主要内容-->
+                <main class="lyear-layout-content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-toolbar clearfix container-fluid">
+                                        <div class="toolbar-btn-action row">
+                                            <div class="col-md-12 search-bar">
+                                                <form class="form-horizontal" onsubmit="return false;">
+                                                    <div class="input-group col-md-4 m-r-10">
+                                                        <span class="input-group-addon" id="basic-addon2">实验室所属教师</span>
+                                                        <select class="form-control" name="teacherId"
+                                                                aria-describedby="basic-addon2">
+                                                        </select>
+                                                    </div>
+                                                    <div class="input-group col-md-4 m-r-10">
+                                                        <span class="input-group-addon" id="basic-addon3">实验室名称</span>
+                                                        <input type="text" name="name" class="form-control"
+                                                               aria-describedby="basic-addon3">
+                                                    </div>
+                                                    <a id="searchBtn" class="btn btn-success"><i
+                                                            class="mdi mdi-check"></i> 查询</a>
+                                                    <a id="resetBtn" class="btn btn-warning"><i
+                                                            class="mdi mdi-block-helper"></i> 清空</a>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-center">#</th>
+                                                        <th class="col-md-2 text-center">实验室名称</th>
+                                                        <th class="col-md-2 text-center">实验室所属教师</th>
+                                                        <th class="col-md-6 text-center">简介</th>
+                                                        <th class="col-md-2 text-center">操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                        <!--  显示分页信息  -->
+                                        <div class="row">
+                                            <!--  分页文字信息  -->
+                                            <div id="pageInfoArea" class="col-md-6"></div>
+                                            <!--  分页条信息  -->
+                                            <div id="pageNavArea" class="col-md-6"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </main>
+                <!--End 页面主要内容-->
+            </div>
+        </div>
+        <script type="text/javascript">
+
+            let totalPageNum, totalPageSize, currentPageNum, currentPageSize, currentPageRecordNum;
+
+            $(function () {
+                $('.search-bar .dropdown-menu a').click(function () {
+                    var field = $(this).data('field') || '';
+                    $('#search-field').val(field);
+                    $('#search-btn').html($(this).text() + ' <span class="caret"></span>');
+                });
+                getTeachers("#infoModal form [name='teacherId']", true)
+                getTeachers(".search-bar [name='teacherId']", true)
+                toPage(1, 10)
+            });
+
+            // 模糊查询search-bar
+            $(document).on("click", "#searchBtn", function () {
+                toPage(1, 10)
+                notify_.notify('查询条件成功！请查看内容～', 'success', 100);
+            })
+
+            // 清空search-bar
+            $(document).on("click", "#resetBtn", function () {
+                resetForm(".search-bar form")
+                toPage(1, 10)
+                notify_.notify('清除查询条件成功！请查看内容～', 'success', 100);
+            })
+
+            // 申请
+            $(document).on("click", "#applyBtn", function () {
+                // 确认是否
+                const name = $(this).parents("tr").find("td:eq(1)").text()
+                const labId = parseInt($(this).parents("tr").find("td:eq(0) input").val())
+                const teacherId = parseInt($(this).parents("tr").find("td:eq(2) input").val())
+                $.confirm({
+                    title: '提示',
+                    content: '' +
+                        '<form action="" class="formName">' +
+                        '<div class="form-group">' +
+                        '<label>请输入关于申请 ' + name + ' 的理由</label>' +
+                        '<textarea class="reason form-control" rows="6" name="reason" placeholder="请输入申请理由" autoComplete="off" required></textarea>' +
+                        '</div>' +
+                        '</form>',
+                    buttons: {
+                        formSubmit: {
+                            text: '提交',
+                            btnClass: 'btn-blue',
+                            action: function () {
+                                const reason = this.$content.find('.reason').val();
+                                if (!reason) {
+                                    $.alert('请输入申请理由');
+                                    return false;
+                                }
+                                $.ajax({
+                                    url: "/lab/approve/apply",
+                                    contentType: 'application/json',
+                                    type: "POST",
+                                    data: JSON.stringify({
+                                        "labId": labId,
+                                        "teacherId": teacherId,
+                                        "studentId": JSON.parse(localStorage.getItem('loginUser')).id,
+                                        "reason": reason,
+                                        "state": 0,
+                                    }),
+                                    success: function () {
+                                        notify_.loading('show');
+                                        // 假设ajax提交操作
+                                        setTimeout(function () {
+                                            notify_.loading('hide');
+                                            notify_.notify('已成功申请 <strong>' + name + '</strong>！', 'success', 100);
+                                            toPage(currentPageNum, 10)
+                                        }, 1e3)
+                                    }
+                                })
+                            }
+                        },
+                        cancel: {
+                            text: '取消'
+                        },
+                    },
+                    onContentReady: function () {
+                        var jc = this;
+                        this.$content.find('form').on('submit', function (e) {
+                            e.preventDefault();
+                            jc.$$formSubmit.trigger('click');
+                        });
+                    }
+                });
+            })
+
+
+            // 获取实验室所属教师列表
+            function getTeachers(ele, flag) {
+                $.ajax({
+                    url: "/user/teacher/getAll/",
+                    async: false,
+                    type: "GET",
+                    success: function (result) {
+                        $(ele).empty()
+                        const list = result.data;
+                        if (flag) $("<option></option>").appendTo(ele)
+                        $.each(list, function () {
+                            const optionEle = $("<option></option>").append(this.name).attr("value", this.id)
+                            optionEle.appendTo(ele)
+                        })
+                    }
+                })
+            }
+
+            // 页面跳转
+            function toPage(pn, ps) {
+                $.ajax({
+                    url: "/lab/getAll/" + pn + "/" + ps,
+                    type: "GET",
+                    data: "&teacherId=" + $(".search-bar form [name='teacherId']").val() + "&name=" + $(".search-bar form [name='name']").val(),
+                    success: function (result) {
+                        buildPageInfo(result);
+                        buildTable(result);
+                    }
+                })
+            }
+
+            // 解析数据
+            function buildTable(result) {
+                // 清空数据
+                $(".table tbody").empty()
+                // 构造数据
+                const list = result.data.records;
+                $.each(list, function (index, item) {
+                    const id = $('<td class="text-center"></td>').append(index + (currentPageNum - 1) * 10 + 1)
+                        .append($('<input hidden value="' + item.id + '">'));
+                    const name = $('<td class="text-center"></td>').append(item.name);
+                    const teacherName = $('<td class="text-center"></td>').append(item.teacherName)
+                        .append($('<input hidden value="' + item.teacherId + '">'));
+                    const brief = $('<td class="text-center"></td>').append(item.brief);
+                    let Btn1;
+                    if (item.teacherId != null)
+                        Btn1 = $('<button class="btn btn-primary btn-w-md" id="applyBtn" type="button">申请</button>');
+                    const btn = $('<td class="text-center"></td>').append(Btn1);
+                    $('<tr></tr>')
+                        .append(id)
+                        .append(name)
+                        .append(teacherName)
+                        .append(brief)
+                        .append(btn).appendTo(".table tbody");
+                })
+            }
+
+        </script>
+    </body>
+</html>

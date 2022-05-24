@@ -1,0 +1,46 @@
+server:
+  port: 8080
+spring:
+  # SpringBoot 2.6.0 与 swagger2 端口冲突
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://121.43.169.109:3306/lims?useSSL=false&useUnicode=ture&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: lims
+    password: lims
+    # 数据库连接池
+    hikari:
+      connection-test-query: SELECT 1
+      connection-timeout: 60000
+      idle-timeout: 500000
+      max-lifetime: 540000
+      maximum-pool-size: 12
+      minimum-idle: 10
+      pool-name: GuliHikariPool
+  # 模板引擎
+  thymeleaf:
+    mode: HTML5
+    encoding: UTF-8
+    cache: false
+    servlet:
+      content-type: text/html
+  # json 时间格式
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  # 文件上传
+  servlet:
+    multipart:
+      # 单个文件
+      max-file-size: 10MB
+      # 批量文件
+      max-request-size: 100MB
+# mybatis
+mybatis-plus:
+  configuration:
+    # 日志支持
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:/mapper/**/*.xml

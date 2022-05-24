@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:include="include :: head('发布公告')"></th:block>
+    </head>
+    <body>
+        <div class="lyear-layout-web">
+            <div class="lyear-layout-container">
+                <aside class="lyear-layout-sidebar">
+                    <th:block th:include="include :: sidebar('发布公告')"></th:block>
+                </aside>
+                <header class="lyear-layout-header">
+                    <th:block th:include="include :: header('发布公告')"></th:block>
+                </header>
+                <!--页面主要内容-->
+                <main class="lyear-layout-content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4>发布公告</h4>
+                                    </div>
+                                    <div class="card-body publish">
+                                        <form>
+                                            <div class="row  m-b-15">
+                                                <div class="col-lg-8 col-lg-offset-2">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                          <button class="btn btn-default" type="button">公告标题</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" name="title"
+                                                               placeholder="请输入公告标题...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="form-group col-lg-8 col-lg-offset-2">
+                                                    <label for="seo_description">公告内容</label>
+                                                    <textarea class="form-control" id="seo_description"
+                                                              name="content" rows="5"
+                                                              placeholder="请输入公告内容..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="form-group col-lg-8 col-lg-offset-2">
+                                                    <label for="seo_description">是否轮播</label>
+                                                    <div class="col-xs-12">
+                                                        <label class="lyear-switch switch-outline switch-primary">
+                                                            <input name="isCarousel" type="checkbox"><span></span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row m-b-15">
+                                                <div class="form-group col-lg-8 col-lg-offset-2">
+                                                    <a class="btn btn-primary" id="save">发布</a>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <!--End 页面主要内容-->
+            </div>
+        </div>
+        <script type="text/javascript">
+
+            // 保存/更新
+            $(document).on("click", "#save", function () {
+                if (
+                    $('.publish form [name="title"]').val() === '' ||
+                    $('.publish form [name="content"]').val() === '') {
+                    notify_.notify('请填写公告标题和公告内容！！', 'danger', 100);
+                    return
+                }
+                $.confirm({
+                    title: '提示',
+                    content: '确认发布公告吗？',
+                    buttons: {
+                        confirm: {
+                            text: '发布',
+                            btnClass: 'btn-blue',
+                            action: function () {
+                                $.ajax({
+                                    url: "/notice/saveOrUpdate",
+                                    contentType: 'application/json',
+                                    type: "POST",
+                                    data: JSON.stringify({
+                                        "title": $('.publish form [name="title"]').val(),
+                                        "isCarousel": $('.publish form [name="isCarousel"]:checked').val() === 'on' ? 1: 0,
+                                        "content": $('.publish form [name="content"]').val(),
+                                        "publishId": JSON.parse(localStorage.getItem("loginUser")).id,
+                                        "publishType": localStorage.getItem("loginUserType")
+                                    }),
+                                    success: function (result) {
+                                        if (result.code === 200) {
+                                            notify_.notify('发布成功！', 'success', 100);
+                                            resetForm(".publish form")
+                                        } else {
+                                            // 显示失败信息
+                                            notify_.notify(result.message, 'danger', 100);
+                                        }
+                                    }
+                                })
+                            }
+                        },
+                        close: {
+                            text: '取消',
+                        }
+                    }
+                })
+            })
+
+        </script>
+    </body>
+</html>
